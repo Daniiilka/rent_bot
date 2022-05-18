@@ -8,4 +8,5 @@ class UserInfo(StatesGroup):
     waiting_for_district = State()
     waiting_for_period = State()
     waiting_for_price = State()
+    waiting_for_rooms = State()
     waiting_for_condition = State()
