@@ -40,10 +40,8 @@ async def init(call: types.CallbackQuery):
 async def realtor_or_usual(call: types.CallbackQuery, state: FSMContext):
 
     await state.update_data(person=call.data.split('_')[1])
-    # user = await state.get_data()
-    # await call.answer(text=user['realtor'])
-
-    await call.message.edit_text(f'Отлично, {call.from_user.first_name}, теперь укажите тип жилья',
+    await call.message.edit_text(f'Отлично, {call.from_user.first_name}, '
+                                 f'теперь укажите тип жилья',
                                  reply_markup=keyboards.type_of_house)
     await UserInfo.next()
 
@@ -52,9 +50,42 @@ async def realtor_or_usual(call: types.CallbackQuery, state: FSMContext):
 async def type_of_house(call: types.CallbackQuery, state: FSMContext):
     data = call.data.split('_')[1]
     if data == 'back':
-        await UserInfo.waiting_for_init.set()
+        # probably may be a problem if do not reset state data
+        await call.message.edit_text('Укажите кто Вы', reply_markup=keyboards.start_keyboard)
+        await UserInfo.waiting_for_start.set()
+    else:
+        await state.update_data(type=call.data.split('_')[1])
+        await call.message.edit_text(text='Введите название района, в котором находится жилье')
+        await UserInfo.next()
 
-    await state.update_data(type=call.data.split('_')[1])
+
+@dp.message_handler(state=UserInfo.waiting_for_district)
+async def type_of_house(message: types.Message, state: FSMContext):
+    await state.update_data(district=message.text.lower())
+    await message.answer('На какой период Вы сдаете жилье?')
+    await UserInfo.next()
+
+
+@dp.message_handler(state=UserInfo.waiting_for_period)
+async def type_of_house(message: types.Message, state: FSMContext):
+    await state.update_data(period=message.text.lower())
+    await message.answer('Введите стоимость квартиры')
+    await UserInfo.next()
+
+
+@dp.message_handler(state=UserInfo.waiting_for_price)
+async def type_of_house(message: types.Message, state: FSMContext):
+    await state.update_data(period=message.text.lower())
+    data = await state.get_data()
+    if data['type'] == 'room':
+        await state.update_data(rooms=1)
+        await UserInfo.next()
+    else:
+        await state.update_data(rooms=message.text.lower())
+    #
+    await message.answer('А теперь спатки')
+    await UserInfo.next()
+
 
 
 
