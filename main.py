@@ -33,6 +33,7 @@ async def send_welcome(message: types.Message):
 @dp.callback_query_handler(Text('init'), state=UserInfo.waiting_for_init)
 async def init(call: types.CallbackQuery):
     await call.message.answer('Укажите кто Вы', reply_markup=keyboards.start_keyboard)
+    await call.answer(text='⚡')
     await UserInfo.waiting_for_start.set()
 
 
@@ -60,14 +61,14 @@ async def type_of_house(call: types.CallbackQuery, state: FSMContext):
 
 
 @dp.message_handler(state=UserInfo.waiting_for_district)
-async def type_of_house(message: types.Message, state: FSMContext):
+async def district(message: types.Message, state: FSMContext):
     await state.update_data(district=message.text.lower())
     await message.answer('На какой период Вы сдаете жилье?')
     await UserInfo.next()
 
 
 @dp.message_handler(state=UserInfo.waiting_for_period)
-async def type_of_house(message: types.Message, state: FSMContext):
+async def period(message: types.Message, state: FSMContext):
     await state.update_data(period=message.text.lower())
     await message.answer('Введите стоимость квартиры')
     await UserInfo.next()
@@ -75,16 +76,86 @@ async def type_of_house(message: types.Message, state: FSMContext):
 
 @dp.message_handler(state=UserInfo.waiting_for_price)
 async def type_of_house(message: types.Message, state: FSMContext):
-    await state.update_data(period=message.text.lower())
+    await state.update_data(price=message.text.lower())
     data = await state.get_data()
+
     if data['type'] == 'room':
         await state.update_data(rooms=1)
-        await UserInfo.next()
+        await message.answer('Состояние квартиры:\n1. Какой ремонт?\n2. Какие есть предметы мебели?')
+        await UserInfo.waiting_for_condition.set()
     else:
-        await state.update_data(rooms=message.text.lower())
-    #
-    await message.answer('А теперь спатки')
+        await message.answer('Введите количество комнат')
+        await UserInfo.next()
+
+
+@dp.message_handler(state=UserInfo.waiting_for_rooms)
+async def rooms(message: types.Message, state: FSMContext):
+    await state.update_data(rooms=message.text.lower())
+    await message.answer('Состояние квартиры:\n1. Какой ремонт?\n2. Какие есть предметы мебели?')
     await UserInfo.next()
+
+
+@dp.message_handler(state=UserInfo.waiting_for_condition)
+async def condition(message: types.Message, state: FSMContext):
+    await state.update_data(condition=message.text.lower())
+    await message.answer('Есть ли в квартире Baxi - индивидуальное отопление?')
+    await UserInfo.next()
+
+
+@dp.message_handler(state=UserInfo.waiting_for_baxi)
+async def baxi(message: types.Message, state: FSMContext):
+    await state.update_data(baxi=message.text.lower())
+    await message.answer('Есть ли кондиционер?')
+    await UserInfo.next()
+
+
+@dp.message_handler(state=UserInfo.waiting_for_conditioner)
+async def baxi(message: types.Message, state: FSMContext):
+    await state.update_data(conditioner=message.text.lower())
+    await message.answer('Животные разрешены?')
+    await UserInfo.next()
+
+
+@dp.message_handler(state=UserInfo.waiting_for_home_pets)
+async def pets(message: types.Message, state: FSMContext):
+    await state.update_data(pets=message.text.lower())
+    await message.answer('Опишите Вашу квартиру')
+    await UserInfo.next()
+
+
+@dp.message_handler(state=UserInfo.waiting_for_pros)
+async def pros(message: types.Message, state: FSMContext):
+    await state.update_data(pros=message.text.lower())
+    await message.answer('Отлично, мы почти закончили!\nОставьте Ваш контактный номер телефона')
+    await UserInfo.next()
+
+
+@dp.message_handler(state=UserInfo.waiting_for_number)
+async def pros(message: types.Message, state: FSMContext):
+    await state.update_data(number=message.text.lower())
+    data = await state.get_data()
+    await message.answer('Поздравляем!\nВаше объявление будет иметь следующий вид:\n'
+                         f'Меня зовут: {message.from_user.first_name}\n'
+                        f'Тип Жилья: {data["type"]}\n'
+                         f'Район: {data["district"]}\n'
+                         f'Состояние квартиры: {data["condition"]}')
+
+# 'Отношение к животным: да'
+#
+# 'Комментарий от владельца: все'
+#
+# 'Количество комнат: 3'
+#
+# 'Наличие отопления (Baxi): Да'
+#
+# 'Наличие кондиционера: Да'
+#
+# 'Сдаю на период: на два дня'
+#
+#
+# 'Стоимость в месяц: мильон '
+#
+# 'Контактный телефон:')"'
 
 
 
