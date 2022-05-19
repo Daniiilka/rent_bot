@@ -55,7 +55,8 @@ async def type_of_house(call: types.CallbackQuery, state: FSMContext):
         await call.message.edit_text('Укажите кто Вы', reply_markup=keyboards.start_keyboard)
         await UserInfo.waiting_for_start.set()
     else:
-        await state.update_data(type=call.data.split('_')[1])
+        house = {'room': 'комната', 'apartment': 'квартира', 'house': 'дом'}
+        await state.update_data(type=house[data])
         await call.message.edit_text(text='Введите название района, в котором находится жилье')
         await UserInfo.next()
 
@@ -133,29 +134,25 @@ async def pros(message: types.Message, state: FSMContext):
 @dp.message_handler(state=UserInfo.waiting_for_number)
 async def pros(message: types.Message, state: FSMContext):
     await state.update_data(number=message.text.lower())
+    await message.answer('Как к Вам обращаться?')
+    await UserInfo.next()
+
+
+@dp.message_handler(state=UserInfo.waiting_for_name)
+async def pros(message: types.Message, state: FSMContext):
+    await state.update_data(name=message.text.lower())
     data = await state.get_data()
     await message.answer('Поздравляем!\nВаше объявление будет иметь следующий вид:\n'
-                         f'Меня зовут: {message.from_user.first_name}\n'
-                        f'Тип Жилья: {data["type"]}\n'
-                         f'Район: {data["district"]}\n'
-                         f'Состояние квартиры: {data["condition"]}')
-
-# 'Отношение к животным: да'
-#
-# 'Комментарий от владельца: все'
-#
-# 'Количество комнат: 3'
-#
-# 'Наличие отопления (Baxi): Да'
-#
-# 'Наличие кондиционера: Да'
-#
-# 'Сдаю на период: на два дня'
-#
-#
-# 'Стоимость в месяц: мильон '
-#
-# 'Контактный телефон:')"'
+                        f'Меня зовут: {data["name"]}\n'
+                        f'Тип жилья: {data["type"]}\n'
+                        f'Район: {data["district"]}\n'
+                        f'Состояние квартиры: {data["condition"]}\n'
+                        f'Отношение к животным: {data["pets"]}\n'
+                        f'Комментарий от владельца: {data["pros"]}\n'
+                        f'Количество комнат: {data["rooms"]}\n'
+                        f'Наличие отопления (Baxi): {data["baxi"]}\n'
+                        f'Наличие кондиционера: {data["conditioner"]}\n'
+                        f'Сдаю на период: {data["period"]}')
 
 
 
