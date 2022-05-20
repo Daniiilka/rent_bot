@@ -7,15 +7,18 @@ from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
+from dotenv import load_dotenv
 
 import keyboards
 import text_messages
 from album_middleware import AlbumMiddleware
 from states import UserInfo
 
+load_dotenv()
+
 logging.basicConfig(level=logging.INFO)
 
-bot_token = getenv("BOT_TOKEN")
+bot_token = getenv("RENT_BOT_TOKEN")
 if not bot_token:
     exit("Error: no token provided")
 
@@ -97,8 +100,8 @@ async def state_of_house(message: types.Message, state: FSMContext):
         await state.update_data(rooms=1)
         await message.answer(
             "Состояние квартиры:\n"
-            "1. Какой ремонт?\n"
-            "2. Какие есть предметы мебели?"
+            "- Какой ремонт?\n"
+            "- Какие предметы мебели есть?"
         )
         await UserInfo.waiting_for_condition.set()
     else:
@@ -110,7 +113,9 @@ async def state_of_house(message: types.Message, state: FSMContext):
 async def rooms(message: types.Message, state: FSMContext):
     await state.update_data(rooms=message.text.lower())
     await message.answer(
-        "Состояние квартиры:\n1. Какой ремонт?\n2. Какие есть предметы мебели?"
+        "Состояние квартиры:\n"
+        "- Какой ремонт?\n"
+        "- Какие предметы мебели есть?"
     )
     await UserInfo.next()
 
@@ -164,13 +169,13 @@ async def user_name(message: types.Message, state: FSMContext):
     await state.update_data(name=message.text.lower())
     data = await state.get_data()
     await message.answer(
-        "Поздравляем!\nВаше объявление будет иметь следующий вид:\n\n"
+        "Ваше объявление будет иметь следующий вид:\n\n"
         f'Меня зовут: {data["name"]}\n'
         f'Тип жилья: {data["type"]}\n'
         f'Район: {data["district"]}\n'
         f'Состояние жилья: {data["condition"]}\n'
         f'Отношение к животным: {data["pets"]}\n'
-        f'Стоимость жилья {data["price"]}\n'
+        f'Стоимость жилья: {data["price"]}\n'
         f'Комментарий от владельца: {data["pros"]}\n'
         f'Количество комнат: {data["rooms"]}\n'
         f'Наличие отопления (Baxi): {data["baxi"]}\n'
@@ -189,10 +194,7 @@ async def handle_albums(message: types.Message, album: List[types.Message]):
     """This handler will receive a complete album of any type."""
     media_group = types.MediaGroup()
     for obj in album:
-        if obj.photo:
-            file_id = obj.photo[-1].file_id
-        else:
-            file_id = obj[obj.content_type].file_id
+        file_id = obj.photo[-1].file_id
 
         try:
             # We can also add a caption to each file by
