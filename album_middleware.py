@@ -5,6 +5,8 @@ from aiogram import types
 from aiogram.dispatcher.handler import CancelHandler
 from aiogram.dispatcher.middlewares import BaseMiddleware
 
+# https://github.com/WhiteMemory99/aiogram_album_handler/blob/master/example/album.py
+
 
 class AlbumMiddleware(BaseMiddleware):
     """This middleware is for capturing media groups."""

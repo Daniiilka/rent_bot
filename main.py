@@ -41,7 +41,7 @@ async def send_welcome(message: types.Message):
 
 @dp.callback_query_handler(Text("init"), state=UserInfo.waiting_for_init)
 async def init(call: types.CallbackQuery):
-    await call.message.answer(
+    await call.message.edit_text(
         "Укажите кто Вы", reply_markup=keyboards.start_keyboard
     )
     await call.answer()
@@ -124,21 +124,30 @@ async def rooms(message: types.Message, state: FSMContext):
 @dp.message_handler(state=UserInfo.waiting_for_condition)
 async def condition(message: types.Message, state: FSMContext):
     await state.update_data(condition=message.text.lower())
-    await message.answer("Есть ли в квартире Baxi - индивидуальное отопление?")
+    await message.answer(
+        "Есть ли в квартире Baxi - индивидуальное отопление?",
+        reply_markup=keyboards.baxi,
+    )
     await UserInfo.next()
 
 
-@dp.message_handler(state=UserInfo.waiting_for_baxi)
-async def baxi(message: types.Message, state: FSMContext):
-    await state.update_data(baxi=message.text.lower())
-    await message.answer("Есть ли кондиционер?")
+@dp.callback_query_handler(state=UserInfo.waiting_for_baxi)
+async def baxi(call: types.CallbackQuery, state: FSMContext):
+    baxi = call.data.split("_")[1]
+    choice = {"yes": "да", "no": "нет"}
+    await state.update_data(baxi=choice[baxi])
+    await call.message.edit_text(
+        "Есть ли кондиционер?", reply_markup=keyboards.air_conditioner
+    )
     await UserInfo.next()
 
 
-@dp.message_handler(state=UserInfo.waiting_for_conditioner)
-async def conditioner(message: types.Message, state: FSMContext):
-    await state.update_data(conditioner=message.text.lower())
-    await message.answer("Животные разрешены?")
+@dp.callback_query_handler(state=UserInfo.waiting_for_conditioner)
+async def conditioner(call: types.CallbackQuery, state: FSMContext):
+    conditioner = call.data.split("_")[1]
+    choice = {"yes": "да", "no": "нет"}
+    await state.update_data(conditioner=choice[conditioner])
+    await call.message.edit_text("Животные разрешены? Если да, то какие?")
     await UserInfo.next()
 
 

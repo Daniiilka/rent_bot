@@ -28,6 +28,21 @@ buttons = [
 ]
 type_of_house.add(*buttons)
 
+baxi = types.InlineKeyboardMarkup()
+buttons = [
+    types.InlineKeyboardButton(text="Да", callback_data="baxi_yes"),
+    types.InlineKeyboardButton(text="Нет", callback_data="baxi_no"),
+]
+baxi.add(*buttons)
+
+
+air_conditioner = types.InlineKeyboardMarkup()
+buttons = [
+    types.InlineKeyboardButton(text="Да", callback_data="conditioner_yes"),
+    types.InlineKeyboardButton(text="Нет", callback_data="conditioner_no"),
+]
+air_conditioner.add(*buttons)
+
 
 add_photos = types.InlineKeyboardMarkup()
 buttons = [
