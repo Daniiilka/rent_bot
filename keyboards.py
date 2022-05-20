@@ -27,3 +27,15 @@ buttons = [
     types.InlineKeyboardButton(text="🠔 Назад", callback_data="type_back"),
 ]
 type_of_house.add(*buttons)
+
+
+add_photos = types.InlineKeyboardMarkup()
+buttons = [
+    types.InlineKeyboardButton(
+        text="Добавить фото", callback_data="add_photo"
+    ),
+    types.InlineKeyboardButton(
+        text="Не добавлять фото", callback_data="no_photo"
+    ),
+]
+add_photos.add(*buttons)

@@ -22,6 +22,8 @@ bot_token = getenv("RENT_BOT_TOKEN")
 if not bot_token:
     exit("Error: no token provided")
 
+admin_id = getenv("ADMIN_ID")
+
 bot = Bot(token=bot_token, parse_mode=types.ParseMode.HTML)
 dp = Dispatcher(bot, storage=MemoryStorage())
 
@@ -42,13 +44,12 @@ async def init(call: types.CallbackQuery):
     await call.message.answer(
         "Укажите кто Вы", reply_markup=keyboards.start_keyboard
     )
-    await call.answer(text="⚡")
+    await call.answer()
     await UserInfo.waiting_for_start.set()
 
 
 @dp.callback_query_handler(state=UserInfo.waiting_for_start)
 async def realtor_or_usual(call: types.CallbackQuery, state: FSMContext):
-
     await state.update_data(person=call.data.split("_")[1])
     await call.message.edit_text(
         f"Отлично, {call.from_user.first_name}, теперь укажите тип жилья",
@@ -167,44 +168,93 @@ async def phone(message: types.Message, state: FSMContext):
 @dp.message_handler(state=UserInfo.waiting_for_name)
 async def user_name(message: types.Message, state: FSMContext):
     await state.update_data(name=message.text.lower())
-    data = await state.get_data()
+    # data = await state.get_data()
     await message.answer(
-        "Ваше объявление будет иметь следующий вид:\n\n"
-        f'Меня зовут: {data["name"]}\n'
-        f'Тип жилья: {data["type"]}\n'
-        f'Район: {data["district"]}\n'
-        f'Состояние жилья: {data["condition"]}\n'
-        f'Отношение к животным: {data["pets"]}\n'
-        f'Стоимость жилья: {data["price"]}\n'
-        f'Комментарий от владельца: {data["pros"]}\n'
-        f'Количество комнат: {data["rooms"]}\n'
-        f'Наличие отопления (Baxi): {data["baxi"]}\n'
-        f'Наличие кондиционера: {data["conditioner"]}\n'
-        f'Сдаю на период: {data["period"]}\n\n'
         "<b>Чтобы Ваше объявление было в приоритете поиска, "
         "добавьте несколько фотографий жилья</b>",
+        reply_markup=keyboards.add_photos,
     )
+    await UserInfo.next()
 
 
-# todo add photos
+@dp.callback_query_handler(
+    Text(endswith="_photo"), state=UserInfo.waiting_for_photo
+)
+async def photo_instruction(call: types.CallbackQuery, state: FSMContext):
+    action = call.data.split("_")[0]
+    if action == "add":
+        example = open("./bin/attach_photo.jpg", "rb")
+        await call.message.answer(
+            "Прикрепите фотографии Вашего жилья как показано в примере"
+        )
+        await bot.send_photo(call.from_user.id, example)
+        example.close()
+        await UserInfo.next()
+    else:
+        data = await state.get_data()
+        await call.message.edit_text(text_messages.result_message(data))
+        await bot.send_message(
+            chat_id=admin_id, text=text_messages.result_message(data)
+        )
+        await state.finish()
 
 
-@dp.message_handler(is_media_group=True, content_types=types.ContentType.PHOTO)
-async def handle_albums(message: types.Message, album: List[types.Message]):
+@dp.message_handler(
+    is_media_group=True,
+    content_types=types.ContentType.PHOTO,
+    state=UserInfo.waiting_for_add_photo,
+)
+async def handle_albums(
+    message: types.Message, album: List[types.Message], state: FSMContext
+):
     """This handler will receive a complete album of any type."""
     media_group = types.MediaGroup()
-    for obj in album:
+    data = await state.get_data()
+    for i, obj in enumerate(album):
         file_id = obj.photo[-1].file_id
 
         try:
             # We can also add a caption to each file by
             # specifying `"caption": "text"`
-            media_group.attach({"media": file_id, "type": obj.content_type})
+            media_group.attach(
+                {
+                    "media": file_id,
+                    "type": obj.content_type,
+                    "caption": text_messages.result_message(data)
+                    if i == 0
+                    else "",
+                }
+            )
         except ValueError:
             return await message.answer(
                 "This type of album is not supported by aiogram."
             )
+
+    # await message.answer(text_messages.result_message(data))
     await message.answer_media_group(media_group)
+    await bot.send_media_group(chat_id=admin_id, media=media_group)
+
+    await state.finish()
+
+
+@dp.message_handler(
+    content_types=types.ContentType.PHOTO, state=UserInfo.waiting_for_add_photo
+)
+async def adding_photo(message: types.Message, state: FSMContext):
+    photo = message.photo[-1].file_id
+    data = await state.get_data()
+
+    await bot.send_photo(
+        message.from_user.id,
+        photo=photo,
+        caption=text_messages.result_message(data),
+    )
+    await bot.send_photo(
+        chat_id=admin_id,
+        photo=photo,
+        caption=text_messages.result_message(data),
+    )
+    await state.finish()
 
 
 if __name__ == "__main__":
