@@ -205,7 +205,7 @@ async def phone(message: types.Message, state: FSMContext):
 @dp.message_handler(state=UserInfo.waiting_for_name)
 async def user_name(message: types.Message, state: FSMContext):
     await state.update_data(name=message.text)
-    # data = await state.get_data()
+
     await message.answer(
         "<b>Чтобы Ваше объявление было более заметным, "
         "добавьте фотографии жилья</b>",
@@ -234,9 +234,7 @@ async def photo_instruction(call: types.CallbackQuery, state: FSMContext):
             "Перед публикацией Вы можете отредактировать пост",
             reply_markup=keyboards.post_keyboard,
         )
-        # await bot.send_message(
-        #     chat_id=admin_id, text=text_messages.result_message(data)
-        # )
+
         await UserInfo.waiting_for_approve.set()
 
 
@@ -255,13 +253,10 @@ async def handle_albums(
 
     await send_media_group(data, message=message, chat_id=message.chat.id)
 
-    # await message.answer(text_messages.result_message(data))
-
     await message.answer(
         "Перед публикацией Вы можете отредактировать пост",
         reply_markup=keyboards.post_keyboard,
     )
-    # await bot.send_media_group(chat_id=admin_id, media=media_group)
 
     await UserInfo.next()
 
@@ -284,11 +279,6 @@ async def adding_photo(message: types.Message, state: FSMContext):
         reply_markup=keyboards.post_keyboard,
     )
 
-    # await bot.send_photo(
-    #     chat_id=admin_id,
-    #     photo=photo,
-    #     caption=text_messages.result_message(data),
-    # )
     await UserInfo.next()
 
 
@@ -302,10 +292,10 @@ async def pub_or_change(call: types.CallbackQuery, state: FSMContext):
             "модерации"
         )
 
-        if data["album"]:
+        if "album" in data:
             await send_media_group(data, call=call, chat_id=admin_id)
 
-        elif data["photo"]:
+        elif "photo" in data:
             await bot.send_photo(
                 chat_id=admin_id,
                 photo=data["photo"],
