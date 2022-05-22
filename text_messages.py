@@ -17,6 +17,9 @@ def result_message(data):
         f'• <b>Комментарий:</b> {data["pros"]}\n\n'
         f'• <b>Период:</b> {data["period"]}\n'
         f'• <b>Стоимость:</b> {data["price"]}\n'
-        f'• <b>Контакты:</b> {data["number"]}\n'
+        f'• <b>Контакты:</b> {data["number"]}\n\n'
+        f'#сдаю_жилье #{data["person"].lower()} #{data["type"].lower()}\n'
+        "@yerevan_rent_channel\n"
+        "@yerevan_rent_bot"
     )
     return result
