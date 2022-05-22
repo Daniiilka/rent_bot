@@ -6,17 +6,17 @@ start_message = (
 
 def result_message(data):
     result = (
-        f'Владелец: {data["name"]}\n\n'
-        f'Тип: {data["type"]}\n\n'
-        f'Район: {data["district"]}\n\n'
-        f'Состояние: {data["condition"]}\n\n'
-        f'Животные: {data["pets"]}\n\n'
-        f'Комментарий владельца: {data["pros"]}\n\n'
-        f'Комнат: {data["rooms"]}\n\n'
-        f'Отопление Baxi: {data["baxi"]}\n\n'
-        f'Кондиционер: {data["conditioner"]}\n\n'
-        f'Период: {data["period"]}\n\n\n'
-        f'Стоимость: {data["price"]}\n\n'
-        f'Контакты: {data["number"]}\n'
+        f'• <b>Владелец:</b> {data["name"]} ({data["person"].lower()})\n\n'
+        f'• <b>Тип:</b> {data["type"]}\n'
+        f'• <b>Район:</b> {data["district"]}\n'
+        f'• <b>Комнат:</b> {data["rooms"]}\n'
+        f'• <b>Отопление Baxi:</b> {data["baxi"]}\n'
+        f'• <b>Кондиционер:</b> {data["conditioner"]}\n'
+        f'• <b>Животные:</b> {data["pets"]}\n\n'
+        f'• <b>Состояние:</b> {data["condition"]}\n\n'
+        f'• <b>Комментарий владельца:</b> {data["pros"]}\n\n'
+        f'• <b>Период:</b> {data["period"]}\n'
+        f'• <b>Стоимость:</b> {data["price"]}\n'
+        f'• <b>Контакты:</b> {data["number"]}\n'
     )
     return result

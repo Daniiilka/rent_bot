@@ -74,7 +74,9 @@ async def init(call: types.CallbackQuery):
 
 @dp.callback_query_handler(state=UserInfo.waiting_for_start)
 async def realtor_or_usual(call: types.CallbackQuery, state: FSMContext):
-    await state.update_data(person=call.data.split("_")[1])
+    value = call.data.split("_")[1]
+    type_of_people = {"owner": "Собственник", "realtor": "Риелтор"}
+    await state.update_data(person=type_of_people[value])
     await call.message.edit_text(
         f"Отлично, {call.from_user.first_name}! Теперь укажите тип жилья",
         reply_markup=keyboards.type_of_house,
