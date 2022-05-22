@@ -87,20 +87,20 @@ async def realtor_or_usual(call: types.CallbackQuery, state: FSMContext):
 )
 async def type_of_house(call: types.CallbackQuery, state: FSMContext):
     data = call.data.split("_")[1]
-    if data == "back":
-        # probably may be a problem if do not reset state data
-        await call.message.edit_text(
-            "Укажите кто Вы", reply_markup=keyboards.start_keyboard
-        )
-        await UserInfo.waiting_for_start.set()
-    else:
-        house = {"room": "Комната", "apartment": "Квартира", "house": "Дом"}
-        await state.update_data(type=house[data])
-        await call.message.edit_text(
-            text="Введите название района, в котором находится жилье\n\n"
-            "Лучше всего уточнить улицу и номер дома"
-        )
-        await UserInfo.next()
+    # if data == "back":
+    #     # probably may be a problem if do not reset state data
+    #     await call.message.edit_text(
+    #         "Укажите кто Вы", reply_markup=keyboards.start_keyboard
+    #     )
+    #     await UserInfo.waiting_for_start.set()
+
+    house = {"room": "Комната", "apartment": "Квартира", "house": "Дом"}
+    await state.update_data(type=house[data])
+    await call.message.edit_text(
+        text="Введите название района, в котором находится жилье\n\n"
+        "Лучше всего уточнить улицу и номер дома"
+    )
+    await UserInfo.next()
 
 
 @dp.message_handler(state=UserInfo.waiting_for_district)
@@ -314,6 +314,7 @@ async def pub_or_change(call: types.CallbackQuery, state: FSMContext):
         await UserInfo.next()
 
 
+# fork of possible changes
 @dp.callback_query_handler(
     Text(startswith="change_"), state=UserInfo.waiting_for_edit
 )
@@ -321,6 +322,10 @@ async def change(call: types.CallbackQuery, state: FSMContext):
     data = call.data.split("_")[1]
     if data == "name":
         await call.message.edit_text("Как к Вам обращаться?")
+    elif data == "person":
+        await call.message.edit_text(
+            "Укажите кто Вы", reply_markup=keyboards.start_keyboard
+        )
     elif data == "type":
         await call.message.edit_text(
             "Укажите тип жилья", reply_markup=keyboards.type_of_house
@@ -361,11 +366,20 @@ async def change(call: types.CallbackQuery, state: FSMContext):
         await call.message.edit_text(
             "Оставьте Ваш контактный телефон и/или телеграм"
         )
+    elif data == "photo":
+        await call.message.answer(
+            "<b>Чтобы Ваше объявление было более заметным, "
+            "добавьте фотографии жилья</b>",
+            reply_markup=keyboards.add_photos,
+        )
 
+        await UserInfo.waiting_for_photo.set()
+        return
     await state.update_data(data_to_update=data)
     await UserInfo.next()
 
 
+# handle changes by message
 @dp.message_handler(state=UserInfo.final_state)
 async def updating_data(message: types.Message, state: FSMContext):
     data = await state.get_data()
@@ -376,6 +390,35 @@ async def updating_data(message: types.Message, state: FSMContext):
     await message.answer(text_messages.result_message(data))
     await UserInfo.waiting_for_approve.set()
     await message.answer(
+        "Перед публикацией Вы можете отредактировать пост",
+        reply_markup=keyboards.post_keyboard,
+    )
+
+
+# handle changes by callback from buttons
+@dp.callback_query_handler(state=UserInfo.final_state)
+async def updating_buttons(call: types.CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    update_field = data["data_to_update"]
+    if update_field in ["baxi", "conditioner"]:
+        value = call.data.split("_")[1]
+        choice = {"yes": "Да", "no": "Нет"}
+        await state.update_data(data={update_field: choice[value]})
+
+    elif update_field == "type":
+        value = call.data.split("_")[1]
+        house = {"room": "Комната", "apartment": "Квартира", "house": "Дом"}
+        await state.update_data(data={update_field: house[value]})
+
+    elif update_field == "person":
+        value = call.data.split("_")[1]
+        type_of_people = {"owner": "Собственник", "realtor": "Риелтор"}
+        await state.update_data(data={update_field: type_of_people[value]})
+
+    data = await state.get_data()
+    await call.message.answer(text_messages.result_message(data))
+    await UserInfo.waiting_for_approve.set()
+    await call.message.answer(
         "Перед публикацией Вы можете отредактировать пост",
         reply_markup=keyboards.post_keyboard,
     )
