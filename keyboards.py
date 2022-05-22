@@ -24,7 +24,7 @@ buttons = [
         text="Квартира", callback_data="type_apartment"
     ),
     types.InlineKeyboardButton(text="Дом", callback_data="type_house"),
-    types.InlineKeyboardButton(text="🠔 Назад", callback_data="type_back"),
+    types.InlineKeyboardButton(text="Назад", callback_data="type_back"),
 ]
 type_of_house.add(*buttons)
 
@@ -54,3 +54,39 @@ buttons = [
     ),
 ]
 add_photos.add(*buttons)
+
+post_keyboard = types.InlineKeyboardMarkup()
+buttons = [
+    types.InlineKeyboardButton(
+        text="Опубликовать!", callback_data="post_publicate"
+    ),
+    types.InlineKeyboardButton(
+        text="Редактировать", callback_data="post_change"
+    ),
+]
+post_keyboard.add(*buttons)
+
+edit_keyboard = types.InlineKeyboardMarkup()
+buttons = [
+    types.InlineKeyboardButton(text="Имя", callback_data="change_name"),
+    types.InlineKeyboardButton(text="Тип", callback_data="change_type"),
+    types.InlineKeyboardButton(text="Район", callback_data="change_district"),
+    types.InlineKeyboardButton(
+        text="Состояние", callback_data="change_condition"
+    ),
+    types.InlineKeyboardButton(text="Животные", callback_data="change_pets"),
+    types.InlineKeyboardButton(
+        text="Комментарий", callback_data="change_pros"
+    ),
+    types.InlineKeyboardButton(text="Комнаты", callback_data="change_rooms"),
+    types.InlineKeyboardButton(
+        text="Отопление Baxi", callback_data="change_baxi"
+    ),
+    types.InlineKeyboardButton(
+        text="Кондиционер", callback_data="change_conditioner"
+    ),
+    types.InlineKeyboardButton(text="Период", callback_data="change_period"),
+    types.InlineKeyboardButton(text="Стоимость", callback_data="change_price"),
+    types.InlineKeyboardButton(text="Контакты", callback_data="change_number"),
+]
+edit_keyboard.add(*buttons)

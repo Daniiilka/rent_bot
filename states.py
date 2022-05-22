@@ -18,3 +18,6 @@ class UserInfo(StatesGroup):
     waiting_for_name = State()
     waiting_for_photo = State()
     waiting_for_add_photo = State()
+    waiting_for_approve = State()
+    waiting_for_edit = State()
+    final_state = State()

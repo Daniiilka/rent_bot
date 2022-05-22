@@ -6,18 +6,17 @@ start_message = (
 
 def result_message(data):
     result = (
-        "Здравствуйте!\n\n"
-        f'Меня зовут: {data["name"]}\n'
-        f'Тип жилья: {data["type"]}\n'
-        f'Район: {data["district"]}\n'
-        f'Состояние жилья: {data["condition"]}\n'
-        f'Отношение к животным: {data["pets"]}\n'
-        f'Стоимость жилья: {data["price"]}\n'
-        f'Комментарий от владельца: {data["pros"]}\n'
-        f'Количество комнат: {data["rooms"]}\n'
-        f'Наличие отопления (Baxi): {data["baxi"]}\n'
-        f'Наличие кондиционера: {data["conditioner"]}\n'
-        f'Сдаю на период: {data["period"]}\n'
-        f'Контактный номер телефона: {data["number"]}\n'
+        f'Владелец: {data["name"]}\n\n'
+        f'Тип: {data["type"]}\n\n'
+        f'Район: {data["district"]}\n\n'
+        f'Состояние: {data["condition"]}\n\n'
+        f'Животные: {data["pets"]}\n\n'
+        f'Комментарий владельца: {data["pros"]}\n\n'
+        f'Комнат: {data["rooms"]}\n\n'
+        f'Отопление Baxi: {data["baxi"]}\n\n'
+        f'Кондиционер: {data["conditioner"]}\n\n'
+        f'Период: {data["period"]}\n\n\n'
+        f'Стоимость: {data["price"]}\n\n'
+        f'Контакты: {data["number"]}\n'
     )
     return result
