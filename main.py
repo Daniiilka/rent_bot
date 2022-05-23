@@ -289,6 +289,9 @@ async def pub_or_change(call: types.CallbackQuery, state: FSMContext):
     command = call.data.split("_")[1]
     data = await state.get_data()
     if command == "publicate":
+        if "data_to_update" in data:
+            update_field = data["data_to_update"]
+            await state.update_data(data={update_field: call.message.text})
         await call.message.edit_text(
             "Спасибо, Ваше объявление будет опубликовано в канале после "
             "модерации"
@@ -374,9 +377,10 @@ async def change(call: types.CallbackQuery, state: FSMContext):
             "добавьте фотографии жилья</b>",
             reply_markup=keyboards.add_photos,
         )
-
         await UserInfo.waiting_for_photo.set()
+        await state.update_data(data_to_update=data)
         return
+
     await state.update_data(data_to_update=data)
     await UserInfo.next()
 
@@ -389,7 +393,19 @@ async def updating_data(message: types.Message, state: FSMContext):
     await state.update_data(data={update_field: message.text})
 
     data = await state.get_data()
-    await message.answer(text_messages.result_message(data))
+    # we send the user the modified post with the media, if there is one
+    if "album" in data:
+        await send_media_group(
+            data=data, message=message, chat_id=message.chat.id
+        )
+    elif "photo" in data:
+        await bot.send_photo(
+            chat_id=admin_id,
+            photo=data["photo"],
+            caption=text_messages.result_message(data),
+        )
+    else:
+        await message.answer(text_messages.result_message(data))
     await UserInfo.waiting_for_approve.set()
     await message.answer(
         "Перед публикацией Вы можете отредактировать пост",
