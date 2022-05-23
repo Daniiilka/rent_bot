@@ -223,10 +223,12 @@ async def photo_instruction(call: types.CallbackQuery, state: FSMContext):
     action = call.data.split("_")[0]
     if action == "add":
         example = open("./bin/attach_photo.jpg", "rb")
-        await call.message.answer(
-            "Прикрепите фотографии Вашего жилья как показано в примере"
+        await bot.send_photo(
+            call.from_user.id,
+            example,
+            caption="Прикрепите фотографии Вашего жилья как "
+            "показано в примере",
         )
-        await bot.send_photo(call.from_user.id, example)
         example.close()
         await UserInfo.next()
     else:
