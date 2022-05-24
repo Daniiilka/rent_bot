@@ -4,7 +4,7 @@ from sys import exit
 from typing import List
 
 from aiogram import Bot, Dispatcher, executor, types
-from aiogram.contrib.fsm_storage.redis import RedisStorage2
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from dotenv import load_dotenv
@@ -25,9 +25,10 @@ if not bot_token:
 admin_id = getenv("ADMIN_ID")
 
 bot = Bot(token=bot_token, parse_mode=types.ParseMode.HTML)
-storage = RedisStorage2(
-    "localhost", 6379, db=4, pool_size=10, prefix="rent_bot"
-)
+# storage = RedisStorage2(
+#     "localhost", 6379, db=4, pool_size=10, prefix="rent_bot"
+# )
+storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 
 
@@ -55,11 +56,12 @@ async def send_media_group(data, call=None, message=None, chat_id=admin_id):
     await bot.send_media_group(chat_id=chat_id, media=media_group)
 
 
-@dp.message_handler(commands=["start", "help"])
-async def send_welcome(message: types.Message):
+@dp.message_handler(commands=["start", "help"], state="*")
+async def send_welcome(message: types.Message, state: FSMContext):
     """
     This handler will be called when user sends `/start` or `/help` command
     """
+    await state.finish()
     await message.answer(
         text_messages.start_message, reply_markup=keyboards.init_keyboard
     )
@@ -447,11 +449,12 @@ async def updating_buttons(call: types.CallbackQuery, state: FSMContext):
     )
 
 
-async def on_shutdown(dp):
-    await dp.storage.close()
-    await dp.storage.wait_closed()
+# async def on_shutdown(dp):
+#     await dp.storage.close()
+#     await dp.storage.wait_closed()
 
 
 if __name__ == "__main__":
     dp.middleware.setup(AlbumMiddleware())
-    executor.start_polling(dp, skip_updates=True, on_shutdown=on_shutdown)
+    # executor.start_polling(dp, skip_updates=True, on_shutdown=on_shutdown)
+    executor.start_polling(dp, skip_updates=True)
