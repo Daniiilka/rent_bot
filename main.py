@@ -4,7 +4,7 @@ from sys import exit
 from typing import List
 
 from aiogram import Bot, Dispatcher, executor, types
-from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.contrib.fsm_storage.redis import RedisStorage2
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from dotenv import load_dotenv
@@ -25,7 +25,10 @@ if not bot_token:
 admin_id = getenv("ADMIN_ID")
 
 bot = Bot(token=bot_token, parse_mode=types.ParseMode.HTML)
-dp = Dispatcher(bot, storage=MemoryStorage())
+storage = RedisStorage2(
+    "localhost", 6379, db=4, pool_size=10, prefix="rent_bot"
+)
+dp = Dispatcher(bot, storage=storage)
 
 
 async def send_media_group(data, call=None, message=None, chat_id=admin_id):
@@ -444,6 +447,11 @@ async def updating_buttons(call: types.CallbackQuery, state: FSMContext):
     )
 
 
+async def on_shutdown(dp):
+    await dp.storage.close()
+    await dp.storage.wait_closed()
+
+
 if __name__ == "__main__":
     dp.middleware.setup(AlbumMiddleware())
-    executor.start_polling(dp, skip_updates=True)
+    executor.start_polling(dp, skip_updates=True, on_shutdown=on_shutdown)
