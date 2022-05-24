@@ -1,0 +1,12 @@
+[Unit]
+Description="Rent bot service"
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/root/rent_bot/
+ExecStart=/bin/bash -c "source /root/rent_bot/venv/bin/activate && python main.py >>/var/log/rent_bot/log 2>&1"
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
