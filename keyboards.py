@@ -1,9 +1,18 @@
 from aiogram import types
+from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
+
+continue_keyboard = types.ReplyKeyboardMarkup(
+    resize_keyboard=True, one_time_keyboard=True
+)
+continue_keyboard.add(types.KeyboardButton("/start"))
 
 init_keyboard = types.InlineKeyboardMarkup()
-init_keyboard.add(
-    types.InlineKeyboardButton(text="Приступим!", callback_data="init")
-)
+buttons = [
+    types.InlineKeyboardButton(text="Приступим!", callback_data="init"),
+    types.InlineKeyboardButton(text="Поддержка", callback_data="help"),
+]
+init_keyboard.add(*buttons)
+
 
 start_keyboard = types.InlineKeyboardMarkup()
 buttons = [
@@ -94,3 +103,8 @@ buttons = [
     types.InlineKeyboardButton(text="Фото", callback_data="change_photo"),
 ]
 edit_keyboard.add(*buttons)
+
+support_markup = ReplyKeyboardMarkup(
+    keyboard=[[KeyboardButton("Вопрос решен!")]],
+    resize_keyboard=True,
+)

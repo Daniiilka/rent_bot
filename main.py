@@ -1,35 +1,15 @@
-import logging
-from os import getenv
-from sys import exit
 from typing import List
 
-from aiogram import Bot, Dispatcher, executor, types
-from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram import executor, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
-from dotenv import load_dotenv
 
 import keyboards
 import text_messages
 from album_middleware import AlbumMiddleware
+from help import dp
+from loader import admin_id
 from states import UserInfo
-
-load_dotenv()
-
-logging.basicConfig(level=logging.INFO)
-
-bot_token = getenv("RENT_BOT_TOKEN")
-if not bot_token:
-    exit("Error: no token provided")
-
-admin_id = getenv("ADMIN_ID")
-
-bot = Bot(token=bot_token, parse_mode=types.ParseMode.HTML)
-# storage = RedisStorage2(
-#     "localhost", 6379, db=4, pool_size=10, prefix="rent_bot"
-# )
-storage = MemoryStorage()
-dp = Dispatcher(bot, storage=storage)
 
 
 async def send_media_group(data, call=None, message=None, chat_id=admin_id):
@@ -53,7 +33,7 @@ async def send_media_group(data, call=None, message=None, chat_id=admin_id):
             return await call.message.answer(
                 "This type of album is not supported by aiogram."
             )
-    await bot.send_media_group(chat_id=chat_id, media=media_group)
+    await dp.bot.send_media_group(chat_id=chat_id, media=media_group)
 
 
 @dp.message_handler(commands=["start", "help"], state="*")
@@ -62,13 +42,14 @@ async def send_welcome(message: types.Message, state: FSMContext):
     This handler will be called when user sends `/start` or `/help` command
     """
     await state.finish()
+
     await message.answer(
         text_messages.start_message, reply_markup=keyboards.init_keyboard
     )
-    await UserInfo.waiting_for_init.set()
+    # await UserInfo.waiting_for_init.set()
 
 
-@dp.callback_query_handler(Text("init"), state=UserInfo.waiting_for_init)
+@dp.callback_query_handler(Text("init"))
 async def init(call: types.CallbackQuery):
     await call.message.edit_text(
         "Укажите кто Вы", reply_markup=keyboards.start_keyboard
@@ -228,7 +209,7 @@ async def photo_instruction(call: types.CallbackQuery, state: FSMContext):
     action = call.data.split("_")[0]
     if action == "add":
         example = open("./bin/attach_photo.jpg", "rb")
-        await bot.send_photo(
+        await dp.bot.send_photo(
             call.from_user.id,
             example,
             caption="Прикрепите фотографии Вашего жилья как "
@@ -278,7 +259,7 @@ async def adding_photo(message: types.Message, state: FSMContext):
     await state.update_data(photo=photo)
     data = await state.get_data()
 
-    await bot.send_photo(
+    await dp.bot.send_photo(
         message.from_user.id,
         photo=photo,
         caption=text_messages.result_message(data),
@@ -308,13 +289,13 @@ async def pub_or_change(call: types.CallbackQuery, state: FSMContext):
             await send_media_group(data, call=call, chat_id=admin_id)
 
         elif "photo" in data:
-            await bot.send_photo(
+            await dp.bot.send_photo(
                 chat_id=admin_id,
                 photo=data["photo"],
                 caption=text_messages.result_message(data),
             )
         else:
-            await bot.send_message(
+            await dp.bot.send_message(
                 chat_id=admin_id, text=text_messages.result_message(data)
             )
         await state.finish()
@@ -406,7 +387,7 @@ async def updating_data(message: types.Message, state: FSMContext):
             data=data, message=message, chat_id=message.chat.id
         )
     elif "photo" in data:
-        await bot.send_photo(
+        await dp.bot.send_photo(
             chat_id=admin_id,
             photo=data["photo"],
             caption=text_messages.result_message(data),

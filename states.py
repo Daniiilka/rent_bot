@@ -2,7 +2,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 
 
 class UserInfo(StatesGroup):
-    waiting_for_init = State()
+    # waiting_for_init = State()
     waiting_for_start = State()
     waiting_for_type = State()
     waiting_for_district = State()
@@ -21,3 +21,7 @@ class UserInfo(StatesGroup):
     waiting_for_approve = State()
     waiting_for_edit = State()
     final_state = State()
+
+
+class SupportStates(StatesGroup):
+    asking = State()
