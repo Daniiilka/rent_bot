@@ -7,7 +7,7 @@ from aiogram.dispatcher.filters import Text
 import keyboards
 import text_messages
 from album_middleware import AlbumMiddleware
-from help import dp
+from bot_help import dp
 from loader import admin_id
 from states import UserInfo
 
