@@ -213,7 +213,7 @@ async def photo_instruction(call: types.CallbackQuery, state: FSMContext):
             call.from_user.id,
             example,
             caption="Прикрепите фотографии Вашего жилья как "
-            "показано в примере",
+            "показано в примере, не более 10 штук",
         )
         example.close()
         await UserInfo.next()
@@ -278,12 +278,17 @@ async def pub_or_change(call: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     if command == "publicate":
         if "data_to_update" in data:
+            # here state needs to delete old state key to avoid bag with media
+            # group to single photo
             update_field = data["data_to_update"]
             await state.update_data(data={update_field: call.message.text})
         await call.message.edit_text(
             "Спасибо, Ваше объявление будет опубликовано в канале после "
             "модерации"
         )
+        # or here we can change logic to avoid issue
+        # if we already have album, but we change it to photo - tag album
+        # didn't change, and we sand album to admin
 
         if "album" in data:
             await send_media_group(data, call=call, chat_id=admin_id)
